@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="utf-8"?>
+<addon addon_id="NotableMembers" title="Add tabs to Notable Members" version_string="0.2" version_id="2" url="https://github.com/DevelopersPL/xf-NotableMembersTabs" install_callback_class="" install_callback_method="" uninstall_callback_class="" uninstall_callback_method="">
+  <admin_navigation/>
+  <admin_permissions/>
+  <admin_style_properties/>
+  <admin_templates/>
+  <admin_template_modifications/>
+  <code_events/>
+  <code_event_listeners>
+    <listener event_id="load_class" execute_order="10" callback_class="NotableMembers_Listener" callback_method="load_class" active="1" hint="" description=""/>
+  </code_event_listeners>
+  <cron/>
+  <email_templates/>
+  <email_template_modifications/>
+  <optiongroups>
+    <option option_id="NotableMembersSecondaryGroups" edit_format="textbox" data_type="string" can_backup="1">
+      <default_value></default_value>
+      <edit_format_params></edit_format_params>
+      <sub_options></sub_options>
+      <relation group_id="users" display_order="122"/>
+    </option>
+    <option option_id="NotableMembersSortOrder" edit_format="textbox" data_type="string" can_backup="1">
+      <default_value></default_value>
+      <edit_format_params></edit_format_params>
+      <sub_options></sub_options>
+      <relation group_id="users" display_order="123"/>
+    </option>
+    <option option_id="NotableMembersTitleSlugs" edit_format="textbox" data_type="string" can_backup="1">
+      <default_value></default_value>
+      <edit_format_params></edit_format_params>
+      <sub_options></sub_options>
+      <relation group_id="users" display_order="121"/>
+    </option>
+    <option option_id="NotableMembersTitles" edit_format="textbox" data_type="string" can_backup="1">
+      <default_value></default_value>
+      <edit_format_params></edit_format_params>
+      <sub_options></sub_options>
+      <relation group_id="users" display_order="120"/>
+    </option>
+  </optiongroups>
+  <permissions>
+    <permission_groups/>
+    <permissions/>
+    <interface_groups/>
+  </permissions>
+  <phrases>
+    <phrase title="option_NotableMembersSecondaryGroups" version_id="1" version_string="0.1"><![CDATA[Notable Members: Secondary Groups]]></phrase>
+    <phrase title="option_NotableMembersSecondaryGroups_explain" version_id="1" version_string="0.1"><![CDATA[Comma-delimeted list of corresponding secondary group IDs.<br />
+e.g.: "6,7,8"]]></phrase>
+    <phrase title="option_NotableMembersSortOrder" version_id="1" version_string="0.1"><![CDATA[Notable Members: Sort Orders]]></phrase>
+    <phrase title="option_NotableMembersSortOrder_explain" version_id="1" version_string="0.1"><![CDATA[Comma-delimeted list of sort orders for corresponding tabs.<br />
+e.g.: "like_count,like_count,message_count"]]></phrase>
+    <phrase title="option_NotableMembersTitles" version_id="1" version_string="0.1"><![CDATA[Notable Members: Tab Titles]]></phrase>
+    <phrase title="option_NotableMembersTitleSlugs" version_id="1" version_string="0.1"><![CDATA[Notable Members: Tab Title Slugs]]></phrase>
+    <phrase title="option_NotableMembersTitleSlugs_explain" version_id="1" version_string="0.1"><![CDATA[Comma-delimeted list of names for visible tabs to add.<br />
+e.g.: "supportteam,premium_users,gods"]]></phrase>
+    <phrase title="option_NotableMembersTitles_explain" version_id="1" version_string="0.1"><![CDATA[Comma-delimeted list of names for visible tabs to add.<br />
+e.g.: "Support Team,Premium Users,Gods"<br />
+<strong>The number of elements in all 4 options on this page must be equal!</strong>]]></phrase>
+  </phrases>
+  <route_prefixes/>
+  <style_properties/>
+  <templates>
+    <template title="member_notable" version_id="1" version_string="0.1"><![CDATA[<xen:title>{xen:phrase notable_members}</xen:title>
+
+<xen:container var="$head.canonical">
+	<link rel="canonical" href="{xen:link 'canonical:members'}" /></xen:container>
+
+<xen:require css="member_list.css" />
+<xen:require css="xenforo_member_list_item.css" />
+	
+<xen:if is="{$userNotFound}">
+	<div class="importantMessage">{xen:phrase specified_member_cannot_be_found_enter_entire_name}</div>
+</xen:if>
+
+<ul class="tabs">
+	<li class="{xen:if '{$type} == "messages"', active}"><a href="{xen:link members}">{xen:phrase most_messages}</a></li>
+	<li class="{xen:if '{$type} == "likes"', active}"><a href="{xen:link members, '', 'type=likes'}">{xen:phrase most_likes}</a></li>
+	<xen:if is="{$xenOptions.enableTrophies}"><li class="{xen:if '{$type} == "points"', active}"><a href="{xen:link members, '', 'type=points'}">{xen:phrase most_points}</a></li></xen:if>
+	<li class="{xen:if '{$type} == "staff"', active}"><a href="{xen:link members, '', 'type=staff'}">{xen:phrase staff_members}</a></li>
+	<xen:foreach loop="$nm_add" key="$nm_type" value="$nm_title">
+			<li class="{xen:if '{$type} == {$nm_type}', active}"><a href="{xen:link members, '', 'type={$nm_type}'}">{$nm_title}</a></li>
+	</xen:foreach>
+</ul>
+
+<div class="section">
+	<ol class="memberList">
+		<xen:foreach loop="$users" value="$user">
+			<xen:include template="member_list_item">
+				<xen:set var="$noOverlay">1</xen:set>
+				<xen:set var="$extraTemplate"><xen:if is="{$bigKey}"><span class="bigNumber">{xen:number {$user.{$bigKey}}}</span></xen:if></xen:set>
+			</xen:include>
+		</xen:foreach>
+	</ol>
+</div>
+
+<xen:sidebar>
+	<div class="section">
+		<form action="{xen:link members}" method="post" class="secondaryContent findMember">
+			<h3><a href="{xen:link online}" title="{xen:phrase see_all_online_users}">{xen:phrase find_member}</a></h3>
+				
+			<input type="search" name="username" placeholder="{xen:phrase name}..." class="textCtrl AutoComplete" data-autoSubmit="true" />
+			<input type="hidden" name="_xfToken" value="{$visitor.csrf_token_page}" />
+		</form>
+	</div>
+
+	<xen:if is="{$birthdays}">
+		<div class="section">
+			<div class="secondaryContent avatarHeap">
+				<h3>{xen:phrase todays_birthdays}</h3>
+				
+				<ol>
+				<xen:foreach loop="$birthdays" value="$user">
+					<li><xen:avatar user="$user" size="s" text="{$user.username}" class="Tooltip" data-tipclass="flipped" title="{$user.username}" /></li>
+				</xen:foreach>
+				</ol>
+			</div>
+		</div>
+	</xen:if>
+	
+	<xen:if is="{$latestUsers}">
+		<div class="section newestMembers">
+			<div class="secondaryContent avatarHeap">
+				<h3>{xen:phrase newest_members}</h3>
+				
+				<ol>
+					<xen:foreach loop="$latestUsers" value="$user">
+						<li><xen:avatar user="$user" size="s" text="{$user.username} ({xen:datetime $user.register_date})" class="Tooltip" data-tipclass="flipped" title="{$user.username}, {xen:phrase joined}: {xen:datetime $user.register_date}" /></li>
+					</xen:foreach>
+				</ol>
+			</div>
+		</div>
+	</xen:if>
+</xen:sidebar>]]></template>
+  </templates>
+  <public_template_modifications/>
+  <bb_code_media_sites/>
+  <bb_codes/>
+</addon>
